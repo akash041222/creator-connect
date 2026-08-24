@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign up — CreatorConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { .auth-wrap { grid-template-columns: 1fr; } .auth-side { display:none; } }
+  .auth-form-col { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .auth-card { width: 100%; max-width: 420px; }
+  .auth-side {
+    background: var(--ink); color: var(--paper); padding: 64px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .auth-side::before {
+    content: ''; position: absolute; inset: -30% -10%;
+    background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--creator-coral) 40%, transparent), transparent 45%),
+                radial-gradient(circle at 80% 85%, color-mix(in srgb, var(--brand-blue) 40%, transparent), transparent 45%);
+  }
+  .auth-side > * { position: relative; }
+  .auth-side .logo { color: var(--paper); }
+  .auth-side ul { padding-left: 20px; }
+  .auth-side li { margin-bottom: 10px; }
+  .role-toggle { display:flex; gap:8px; margin-bottom: 24px; background: var(--paper-dim); padding: 4px; border-radius: 999px; }
+  .role-toggle button { flex:1; padding:9px; border:none; border-radius:999px; background:transparent; font-weight:700; font-size:0.85rem; cursor:pointer; color: var(--slate); }
+  .role-toggle button.active { background: var(--paper-raised); color: var(--ink); box-shadow: var(--shadow-sm); }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-side">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div>
+      <div class="eyebrow" style="color:#fff;">Why join</div>
+      <ul style="color:color-mix(in srgb, var(--paper) 85%, transparent);">
+        <li>Free to sign up, no credit card required</li>
+        <li>Applications and approvals tracked in one dashboard</li>
+        <li>Payments and invoices recorded automatically</li>
+      </ul>
+    </div>
+    <div style="font-size:0.85rem;color:var(--slate);">Already part of the platform? <a href="login.html" style="color:#fff;text-decoration:underline;">Log in</a></div>
+  </div>
+  <div class="auth-form-col">
+    <div class="auth-card">
+      <h1 style="font-size:1.9rem;">Create your account</h1>
+      <p style="margin-bottom:20px;">Tell us which side of the marketplace you're on.</p>
+
+      <div class="role-toggle" role="tablist">
+        <button type="button" id="role-creator-btn" class="active">I'm a creator</button>
+        <button type="button" id="role-company-btn">I'm a brand</button>
+      </div>
+
+      <form id="register-form">
+        <div class="field" id="company-name-field" style="display:none;">
+          <label for="companyName">Company name</label>
+          <input type="text" id="companyName" placeholder="Nova Beauty" />
+        </div>
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input type="text" id="fullName" required placeholder="Jane Doe" />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" required placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" placeholder="9876543210" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" required minlength="8" placeholder="At least 8 characters" />
+          <small>Use 8+ characters with a mix of letters and numbers.</small>
+        </div>
+        <button type="submit" class="btn btn-gradient btn-block" id="register-btn">Create account</button>
+      </form>
+      <p style="text-align:center;margin-top:18px;font-size:0.85rem;">By signing up you agree to our <a href="#" style="color:var(--brand-blue);">Terms</a> and <a href="#" style="color:var(--brand-blue);">Privacy Policy</a>.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  if (CCApi.isLoggedIn()) window.location.href = 'index.html';
+
+  let selectedRole = new URLSearchParams(window.location.search).get('role') === 'COMPANY' ? 'COMPANY' : 'CREATOR';
+
+  const creatorBtn = document.getElementById('role-creator-btn');
+  const companyBtn = document.getElementById('role-company-btn');
+  const companyField = document.getElementById('company-name-field');
+
+  function renderRole() {
+    creatorBtn.classList.toggle('active', selectedRole === 'CREATOR');
+    companyBtn.classList.toggle('active', selectedRole === 'COMPANY');
+    companyField.style.display = selectedRole === 'COMPANY' ? 'block' : 'none';
+    document.getElementById('companyName').required = selectedRole === 'COMPANY';
+  }
+  creatorBtn.addEventListener('click', () => { selectedRole = 'CREATOR'; renderRole(); });
+  companyBtn.addEventListener('click', () => { selectedRole = 'COMPANY'; renderRole(); });
+  renderRole();
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('register-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+    try {
+      const auth = await CCApi.register({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+        fullName: document.getElementById('fullName').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        role: selectedRole,
+        companyName: document.getElementById('companyName').value.trim(),
+      });
+      CCApi.setSession(auth);
+      CCUI.toast('Account created! Welcome to CreatorConnect.', 'success');
+      const dest = auth.role === 'COMPANY' ? 'company-dashboard.html' : 'creator-dashboard.html';
+      setTimeout(() => window.location.href = dest, 600);
+    } catch (err) {
+      CCUI.toast(err.message || 'Could not create account.', 'error');
+      btn.disabled = false; btn.textContent = 'Create account';
+    }
+  });
+</script>
+</body>
+</html>

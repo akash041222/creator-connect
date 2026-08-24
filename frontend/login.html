@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — CreatorConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { .auth-wrap { grid-template-columns: 1fr; } .auth-side { display:none; } }
+  .auth-form-col { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .auth-card { width: 100%; max-width: 400px; }
+  .auth-side {
+    background: var(--ink); color: var(--paper); padding: 64px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .auth-side::before {
+    content: ''; position: absolute; inset: -30% -10%;
+    background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--brand-blue) 40%, transparent), transparent 45%),
+                radial-gradient(circle at 80% 85%, color-mix(in srgb, var(--creator-coral) 40%, transparent), transparent 45%);
+  }
+  .auth-side > * { position: relative; }
+  .auth-quote { font-family: var(--font-display); font-size: 1.6rem; font-style: italic; max-width: 380px; }
+  .auth-side .logo { color: var(--paper); }
+  .divider-or { display:flex; align-items:center; gap:12px; color:var(--slate); font-size:0.8rem; margin: 20px 0; }
+  .divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background:var(--line); }
+  .role-toggle { display:flex; gap:8px; margin-bottom: 24px; background: var(--paper-dim); padding: 4px; border-radius: 999px; }
+  .role-toggle button { flex:1; padding:9px; border:none; border-radius:999px; background:transparent; font-weight:700; font-size:0.85rem; cursor:pointer; color: var(--slate); }
+  .role-toggle button.active { background: var(--paper-raised); color: var(--ink); box-shadow: var(--shadow-sm); }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-side">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div class="auth-quote">"Campaigns come to me now, and I know the payout before I even apply."</div>
+    <div style="font-size:0.85rem;color:var(--slate);">— Priya Nair, Food creator</div>
+  </div>
+  <div class="auth-form-col">
+    <div class="auth-card">
+      <h1 style="font-size:1.9rem;">Welcome back</h1>
+      <p style="margin-bottom:28px;">Log in to manage your campaigns and applications.</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" required placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="••••••••" />
+        </div>
+        <div class="field" style="display:flex;align-items:center;justify-content:space-between;">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:500;margin:0;">
+            <input type="checkbox" id="rememberMe" style="width:auto;" /> Remember me
+          </label>
+          <a href="forgot-password.html" style="font-size:0.85rem;font-weight:600;color:var(--brand-blue);">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-gradient btn-block" id="login-btn">Log in</button>
+      </form>
+
+      <div class="divider-or">or</div>
+      <p style="text-align:center;">Don't have an account? <a href="register.html" style="color:var(--brand-blue);font-weight:700;">Sign up</a></p>
+
+      <div style="margin-top:20px;padding:14px;border-radius:var(--radius-sm);background:var(--paper-dim);font-size:0.78rem;color:var(--slate);">
+        Demo accounts (password: <code>Password123!</code>): <br />
+        brand@novabeauty.com · ananya.creates@gmail.com · admin@creatorconnect.app
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  if (CCApi.isLoggedIn()) window.location.href = 'index.html';
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Logging in…';
+    try {
+      const auth = await CCApi.login({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+        rememberMe: document.getElementById('rememberMe').checked,
+      });
+      CCApi.setSession(auth);
+      CCUI.toast(`Welcome back, ${auth.fullName.split(' ')[0]}!`, 'success');
+      const dest = auth.role === 'COMPANY' ? 'company-dashboard.html'
+        : auth.role === 'CREATOR' ? 'creator-dashboard.html' : 'admin-dashboard.html';
+      setTimeout(() => window.location.href = dest, 500);
+    } catch (err) {
+      CCUI.toast(err.message || 'Login failed. Check your credentials.', 'error');
+      btn.disabled = false; btn.textContent = 'Log in';
+    }
+  });
+</script>
+</body>
+</html>

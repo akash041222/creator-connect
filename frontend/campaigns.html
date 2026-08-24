@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Browse campaigns — CreatorConnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .browse-layout { display:grid; grid-template-columns: 260px 1fr; gap: 32px; padding: 40px 0 80px; align-items: start; }
+  @media (max-width: 860px) { .browse-layout { grid-template-columns: 1fr; } }
+  .filter-panel { position: sticky; top: 90px; }
+  .filter-group { margin-bottom: 20px; }
+  .filter-group h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; color: var(--slate); }
+  .campaign-card { padding: 22px; display:flex; flex-direction: column; gap: 12px; }
+  .campaign-card .cc-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .campaign-card .cc-company { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:var(--slate); font-weight:600; }
+  .campaign-card .cc-company img { width:22px;height:22px;border-radius:50%; }
+  .campaign-card h3 { font-size:1.15rem; margin: 4px 0; }
+  .cc-meta-row { display:flex; flex-wrap:wrap; gap: 10px; font-size: 0.8rem; color: var(--slate); }
+  .cc-meta-row span { display:flex; align-items:center; gap:4px; }
+  .cc-budget { font-family: var(--font-display); font-size: 1.3rem; font-weight:600; white-space:nowrap; }
+  .results-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div class="nav-links">
+      <a href="campaigns.html">Browse campaigns</a>
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#pricing">Pricing</a>
+    </div>
+    <div class="nav-actions" data-nav-actions></div>
+    <button class="icon-btn mobile-toggle" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<div class="container browse-layout">
+  <aside class="filter-panel card" style="padding:24px;">
+    <h3 style="font-size:1rem;margin-bottom:18px;">Filters</h3>
+    <div class="filter-group">
+      <h4>Keyword</h4>
+      <input type="text" id="f-keyword" placeholder="Search campaigns…" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);" />
+    </div>
+    <div class="filter-group">
+      <h4>Category</h4>
+      <select id="f-category" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
+        <option value="">All categories</option>
+        <option>Beauty</option><option>Fitness</option><option>Food</option>
+        <option>Technology</option><option>Travel</option><option>Fashion</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <h4>Platform</h4>
+      <select id="f-platform" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
+        <option value="">Any platform</option>
+        <option value="INSTAGRAM">Instagram</option>
+        <option value="YOUTUBE">YouTube</option>
+        <option value="TIKTOK">TikTok</option>
+        <option value="FACEBOOK">Facebook</option>
+        <option value="LINKEDIN">LinkedIn</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <h4>Budget range (₹)</h4>
+      <div style="display:flex;gap:8px;">
+        <input type="number" id="f-min-budget" placeholder="Min" style="width:50%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--line);" />
+        <input type="number" id="f-max-budget" placeholder="Max" style="width:50%;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--line);" />
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="apply-filters">Apply filters</button>
+  </aside>
+
+  <main>
+    <div class="results-head">
+      <div>
+        <h1 style="font-size:1.6rem;">Open campaigns</h1>
+        <p id="results-count" style="margin:0;">Loading…</p>
+      </div>
+      <select id="f-sort" style="padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
+        <option value="createdAt:desc">Newest first</option>
+        <option value="budget:desc">Highest budget</option>
+        <option value="deadline:asc">Deadline soonest</option>
+      </select>
+    </div>
+    <div class="grid grid-2" id="campaign-results"></div>
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:32px;" id="pagination"></div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  let page = 0;
+  const size = 8;
+
+  function campaignCardHtml(c) {
+    return `
+      <div class="card campaign-card card-hover">
+        <div class="cc-top">
+          <div>
+            <div class="cc-company">
+              <img src="${c.companyLogoUrl || 'https://placehold.co/40x40?text=' + encodeURIComponent(c.companyName[0])}" alt="" />
+              ${CCUI.escapeHtml(c.companyName)} ${c.companyVerified ? '<span class="badge badge-verified">Verified</span>' : ''}
+            </div>
+            <h3><a href="campaign-detail.html?id=${c.id}">${CCUI.escapeHtml(c.title)}</a></h3>
+          </div>
+          <div class="cc-budget">${CCUI.formatCurrency(c.budget)}</div>
+        </div>
+        <p style="margin:0;">${CCUI.escapeHtml((c.description || '').slice(0, 120))}${c.description && c.description.length > 120 ? '…' : ''}</p>
+        <div class="cc-meta-row">
+          <span class="badge ${CCUI.badgeClassFor(c.status)}">${c.status}</span>
+          ${c.category ? `<span>📁 ${CCUI.escapeHtml(c.category)}</span>` : ''}
+          ${c.preferredPlatform ? `<span>📱 ${c.preferredPlatform}</span>` : ''}
+          ${c.minFollowers ? `<span>👥 ${CCUI.formatNumber(c.minFollowers)}+ followers</span>` : ''}
+          ${c.deadline ? `<span>⏳ ${CCUI.formatDate(c.deadline)}</span>` : ''}
+          <span>📨 ${c.applicationCount || 0} applied</span>
+        </div>
+        <a href="campaign-detail.html?id=${c.id}" class="btn btn-outline btn-sm" style="align-self:flex-start;">View details</a>
+      </div>`;
+  }
+
+  async function loadCampaigns() {
+    const results = document.getElementById('campaign-results');
+    results.innerHTML = Array.from({length:4}).map(() => `<div class="skeleton" style="height:220px;"></div>`).join('');
+
+    const [sortBy, direction] = document.getElementById('f-sort').value.split(':');
+    try {
+      const data = await CCApi.searchCampaigns({
+        keyword: document.getElementById('f-keyword').value.trim(),
+        category: document.getElementById('f-category').value,
+        platform: document.getElementById('f-platform').value,
+        minBudget: document.getElementById('f-min-budget').value,
+        maxBudget: document.getElementById('f-max-budget').value,
+        page, size, sortBy, direction, status: 'OPEN',
+      });
+      document.getElementById('results-count').textContent = `${data.totalElements} open campaign${data.totalElements === 1 ? '' : 's'}`;
+      if (!data.content.length) {
+        results.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>No campaigns match yet</h3><p>Try widening your filters.</p></div>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+      results.innerHTML = data.content.map(campaignCardHtml).join('');
+      renderPagination(data);
+    } catch (err) {
+      results.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><h3>Couldn't load campaigns</h3><p>${CCUI.escapeHtml(err.message)}</p></div>`;
+    }
+  }
+
+  function renderPagination(data) {
+    const el = document.getElementById('pagination');
+    if (data.totalPages <= 1) { el.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 0; i < data.totalPages; i++) {
+      html += `<button class="btn btn-sm ${i === data.pageNumber ? 'btn-primary' : 'btn-outline'}" data-page="${i}">${i + 1}</button>`;
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('button').forEach((btn) => btn.addEventListener('click', () => {
+      page = parseInt(btn.dataset.page, 10);
+      loadCampaigns();
+    }));
+  }
+
+  document.getElementById('apply-filters').addEventListener('click', () => { page = 0; loadCampaigns(); });
+  document.getElementById('f-sort').addEventListener('change', () => { page = 0; loadCampaigns(); });
+  loadCampaigns();
+</script>
+</body>
+</html>

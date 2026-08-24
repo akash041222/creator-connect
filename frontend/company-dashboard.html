@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Company dashboard — CreatorConnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div class="nav-links">
+      <a href="campaigns.html">Browse campaigns</a>
+      <a href="company-dashboard.html">Dashboard</a>
+    </div>
+    <div class="nav-actions" data-nav-actions></div>
+    <button class="icon-btn mobile-toggle" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<div class="dash-layout container">
+  <aside class="dash-sidebar">
+    <nav class="dash-tabs">
+      <button class="dash-tab active" data-tab="overview">📊 Overview</button>
+      <button class="dash-tab" data-tab="campaigns">📢 Campaigns</button>
+      <button class="dash-tab" data-tab="applications">📋 Applications</button>
+      <button class="dash-tab" data-tab="payments">💳 Payments</button>
+      <button class="dash-tab" data-tab="profile">🏢 Company profile</button>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <!-- OVERVIEW -->
+    <section id="tab-overview" class="dash-panel">
+      <div class="dash-head"><div><h1 id="welcome-heading">Welcome back</h1><p>Here's how your campaigns are performing.</p></div></div>
+      <div class="grid grid-4" id="overview-stats"></div>
+      <div class="card" style="padding:24px;margin-top:24px;">
+        <h3 style="margin-bottom:16px;">Recent activity</h3>
+        <div id="recent-activity"><p>Loading…</p></div>
+      </div>
+    </section>
+
+    <!-- CAMPAIGNS -->
+    <section id="tab-campaigns" class="dash-panel" style="display:none;">
+      <div class="dash-head">
+        <div><h1>Your campaigns</h1><p>Create and manage every campaign you've published.</p></div>
+        <button class="btn btn-gradient btn-sm" id="new-campaign-btn">+ New campaign</button>
+      </div>
+      <div id="campaigns-list"><p>Loading…</p></div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section id="tab-applications" class="dash-panel" style="display:none;">
+      <div class="dash-head"><div><h1>Applicants</h1><p>Review, shortlist, accept, or reject creators.</p></div></div>
+      <div id="applications-list"><p>Loading…</p></div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section id="tab-payments" class="dash-panel" style="display:none;">
+      <div class="dash-head"><div><h1>Payments</h1><p>Track what you owe and what's been paid out.</p></div></div>
+      <div id="payments-list"><p>Loading…</p></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="tab-profile" class="dash-panel" style="display:none;">
+      <div class="dash-head"><div><h1>Company profile</h1><p>This is what creators see when they view your brand.</p></div></div>
+      <form id="profile-form" class="card" style="padding:28px;max-width:640px;">
+        <div class="field"><label>Company name</label><input type="text" id="p-name" required /></div>
+        <div class="grid grid-2">
+          <div class="field"><label>Logo URL</label><input type="url" id="p-logo" /></div>
+          <div class="field"><label>Website</label><input type="url" id="p-website" /></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label>Industry</label><input type="text" id="p-industry" /></div>
+          <div class="field"><label>Location</label><input type="text" id="p-location" /></div>
+        </div>
+        <div class="field"><label>Description</label><textarea id="p-description"></textarea></div>
+        <button type="submit" class="btn btn-gradient" id="profile-save">Save profile</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Create/Edit campaign modal -->
+<div id="campaign-modal" style="display:none;position:fixed;inset:0;background:rgba(20,22,31,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+  <div class="card" style="max-width:560px;width:100%;padding:28px;margin:40px 0;">
+    <h3 id="campaign-modal-title" style="margin-bottom:16px;">New campaign</h3>
+    <form id="campaign-form">
+      <input type="hidden" id="c-id" />
+      <div class="field"><label>Title</label><input type="text" id="c-title" required /></div>
+      <div class="field"><label>Description</label><textarea id="c-description" required></textarea></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Budget (₹)</label><input type="number" id="c-budget" required min="0" /></div>
+        <div class="field"><label>Creators required</label><input type="number" id="c-creators" min="1" value="1" /></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Category</label><input type="text" id="c-category" placeholder="Beauty, Fitness…" /></div>
+        <div class="field"><label>Min. followers</label><input type="number" id="c-min-followers" min="0" /></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Preferred platform</label>
+          <select id="c-platform">
+            <option value="">Any</option>
+            <option value="INSTAGRAM">Instagram</option>
+            <option value="YOUTUBE">YouTube</option>
+            <option value="TIKTOK">TikTok</option>
+            <option value="FACEBOOK">Facebook</option>
+            <option value="LINKEDIN">LinkedIn</option>
+          </select>
+        </div>
+        <div class="field"><label>Deadline</label><input type="date" id="c-deadline" /></div>
+      </div>
+      <div class="field"><label>Banner image URL</label><input type="url" id="c-banner" /></div>
+      <div class="field"><label>Guidelines</label><textarea id="c-guidelines"></textarea></div>
+      <div class="field"><label>Deliverables</label><input type="text" id="c-deliverables" placeholder="1 Reel + 2 Stories" /></div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn btn-outline" id="campaign-cancel" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn btn-gradient" style="flex:1;" id="campaign-save">Save campaign</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/dashboard-company.js"></script>
+</body>
+</html>

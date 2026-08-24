@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Brand profile — CreatorConnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div class="nav-links"><a href="campaigns.html">Browse campaigns</a></div>
+    <div class="nav-actions" data-nav-actions></div>
+  </div>
+</nav>
+<div class="container" style="padding:48px 0;max-width:720px;" id="root">
+  <div class="skeleton" style="height:240px;"></div>
+</div>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const id = new URLSearchParams(window.location.search).get('id');
+  (async () => {
+    try {
+      const c = await CCApi.publicCompanyProfile(id);
+      document.getElementById('root').innerHTML = `
+        <div class="card" style="padding:32px;">
+          <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px;">
+            <img src="${c.logoUrl || 'https://placehold.co/96x96?text=' + encodeURIComponent(c.companyName[0])}" style="width:72px;height:72px;border-radius:16px;" alt="" />
+            <div>
+              <h1 style="margin-bottom:4px;">${CCUI.escapeHtml(c.companyName)} ${c.verified ? '<span class="badge badge-verified">Verified</span>' : ''}</h1>
+              <p style="margin:0;">${CCUI.escapeHtml(c.industry || '')} ${c.location ? '· ' + CCUI.escapeHtml(c.location) : ''}</p>
+            </div>
+          </div>
+          <p>${CCUI.escapeHtml(c.description || 'No description yet.')}</p>
+          <div class="grid grid-3" style="margin-top:20px;">
+            <div class="card stat-card" style="padding:16px;"><div class="sc-label">Campaigns</div><div class="sc-value" style="font-size:1.4rem;">${c.totalCampaigns}</div></div>
+            <div class="card stat-card" style="padding:16px;"><div class="sc-label">Avg. rating</div><div class="sc-value" style="font-size:1.4rem;">${(c.averageRating||0).toFixed(1)} ★</div></div>
+            <div class="card stat-card" style="padding:16px;"><div class="sc-label">Website</div><div style="font-size:0.9rem;margin-top:8px;"><a href="${c.website||'#'}" style="color:var(--brand-blue);">${c.website ? 'Visit site →' : '—'}</a></div></div>
+          </div>
+        </div>`;
+    } catch (err) {
+      document.getElementById('root').innerHTML = `<div class="empty-state"><h3>Couldn't load this profile</h3><p>${CCUI.escapeHtml(err.message)}</p></div>`;
+    }
+  })();
+</script>
+</body>
+</html>

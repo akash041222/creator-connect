@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Campaign details — CreatorConnect</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<style>
+  .detail-layout { display:grid; grid-template-columns: 1fr 340px; gap: 32px; padding: 40px 0 80px; align-items:start; }
+  @media (max-width: 900px) { .detail-layout { grid-template-columns: 1fr; } }
+  .cd-banner { width:100%; height: 260px; object-fit: cover; border-radius: var(--radius-lg); margin-bottom: 24px; }
+  .cd-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom: 20px; flex-wrap:wrap; }
+  .cd-company { display:flex; align-items:center; gap: 10px; margin-bottom: 20px; }
+  .cd-company img { width:36px;height:36px;border-radius:50%; }
+  .cd-section { margin-bottom: 28px; }
+  .cd-section h3 { font-size: 1.05rem; margin-bottom: 10px; }
+  .sidebar-card { padding: 24px; position: sticky; top: 90px; }
+  .fact-row { display:flex; justify-content:space-between; padding: 10px 0; border-top:1px solid var(--line); font-size:0.88rem; }
+  .fact-row:first-child { border-top:none; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">CC</span> CreatorConnect</a>
+    <div class="nav-links">
+      <a href="campaigns.html">Browse campaigns</a>
+      <a href="index.html#how-it-works">How it works</a>
+    </div>
+    <div class="nav-actions" data-nav-actions></div>
+    <button class="icon-btn mobile-toggle" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<div class="container" id="detail-root">
+  <div class="skeleton" style="height:400px;margin-top:40px;"></div>
+</div>
+
+<!-- Apply modal -->
+<div id="apply-modal" style="display:none;position:fixed;inset:0;background:rgba(20,22,31,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;">
+  <div class="card" style="max-width:480px;width:100%;padding:28px;">
+    <h3 style="margin-bottom:16px;">Apply to this campaign</h3>
+    <form id="apply-form">
+      <div class="field">
+        <label for="apply-message">Your pitch</label>
+        <textarea id="apply-message" required placeholder="Why are you a great fit for this campaign?"></textarea>
+      </div>
+      <div class="field">
+        <label for="apply-portfolio">Portfolio link</label>
+        <input type="url" id="apply-portfolio" placeholder="https://…" />
+      </div>
+      <div class="field">
+        <label for="apply-timeline">Expected timeline</label>
+        <input type="text" id="apply-timeline" placeholder="e.g. 5 days after product delivery" />
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn btn-outline" id="apply-cancel" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn btn-gradient" style="flex:1;" id="apply-submit">Submit application</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const campaignId = new URLSearchParams(window.location.search).get('id');
+  const root = document.getElementById('detail-root');
+
+  async function load() {
+    if (!campaignId) { root.innerHTML = '<div class="empty-state"><h3>Campaign not found</h3></div>'; return; }
+    try {
+      const c = await CCApi.getCampaign(campaignId);
+      root.innerHTML = `
+        <div class="detail-layout">
+          <div>
+            <img class="cd-banner" src="${c.bannerUrl || 'https://placehold.co/1000x400?text=' + encodeURIComponent(c.title)}" alt="" />
+            <div class="cd-header">
+              <div>
+                <span class="badge ${CCUI.badgeClassFor(c.status)}">${c.status}</span>
+                <h1 style="margin-top:10px;">${CCUI.escapeHtml(c.title)}</h1>
+              </div>
+              <div class="cc-budget" style="font-family:var(--font-display);font-size:1.8rem;">${CCUI.formatCurrency(c.budget)}</div>
+            </div>
+            <div class="cd-company">
+              <img src="${c.companyLogoUrl || 'https://placehold.co/72x72?text=' + encodeURIComponent(c.companyName[0])}" alt="" />
+              <div>
+                <div style="font-weight:700;">${CCUI.escapeHtml(c.companyName)} ${c.companyVerified ? '<span class="badge badge-verified">Verified</span>' : ''}</div>
+                <a href="company-profile.html?id=${c.companyId}" style="font-size:0.82rem;color:var(--brand-blue);">View brand profile →</a>
+              </div>
+            </div>
+
+            <div class="cd-section">
+              <h3>About this campaign</h3>
+              <p>${CCUI.escapeHtml(c.description).replace(/\n/g,'<br/>')}</p>
+            </div>
+            ${c.guidelines ? `<div class="cd-section"><h3>Guidelines</h3><p>${CCUI.escapeHtml(c.guidelines).replace(/\n/g,'<br/>')}</p></div>` : ''}
+            ${c.deliverables ? `<div class="cd-section"><h3>Expected deliverables</h3><p>${CCUI.escapeHtml(c.deliverables)}</p></div>` : ''}
+          </div>
+
+          <aside class="sidebar-card card">
+            <div class="fact-row"><span>Category</span><strong>${CCUI.escapeHtml(c.category || '—')}</strong></div>
+            <div class="fact-row"><span>Platform</span><strong>${c.preferredPlatform || 'Any'}</strong></div>
+            <div class="fact-row"><span>Min. followers</span><strong>${c.minFollowers ? CCUI.formatNumber(c.minFollowers) : 'None'}</strong></div>
+            <div class="fact-row"><span>Creators needed</span><strong>${c.creatorsRequired}</strong></div>
+            <div class="fact-row"><span>Applicants so far</span><strong>${c.applicationCount}</strong></div>
+            <div class="fact-row"><span>Deadline</span><strong>${CCUI.formatDate(c.deadline)}</strong></div>
+            <button class="btn btn-gradient btn-block" style="margin-top:20px;" id="apply-cta">Apply to this campaign</button>
+          </aside>
+        </div>`;
+
+      document.getElementById('apply-cta').addEventListener('click', onApplyClick);
+    } catch (err) {
+      root.innerHTML = `<div class="empty-state"><h3>Couldn't load this campaign</h3><p>${CCUI.escapeHtml(err.message)}</p></div>`;
+    }
+  }
+
+  function onApplyClick() {
+    const session = CCApi.getSession();
+    if (!session) { window.location.href = `login.html?next=campaign-detail.html?id=${campaignId}`; return; }
+    if (session.role !== 'CREATOR') { CCUI.toast('Only creator accounts can apply to campaigns.', 'error'); return; }
+    document.getElementById('apply-modal').style.display = 'flex';
+  }
+
+  document.getElementById('apply-cancel').addEventListener('click', () => {
+    document.getElementById('apply-modal').style.display = 'none';
+  });
+
+  document.getElementById('apply-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('apply-submit');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      await CCApi.apply({
+        campaignId: Number(campaignId),
+        message: document.getElementById('apply-message').value.trim(),
+        portfolioLink: document.getElementById('apply-portfolio').value.trim(),
+        expectedTimeline: document.getElementById('apply-timeline').value.trim(),
+      });
+      CCUI.toast('Application submitted!', 'success');
+      document.getElementById('apply-modal').style.display = 'none';
+    } catch (err) {
+      CCUI.toast(err.message || 'Could not submit application.', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit application';
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>

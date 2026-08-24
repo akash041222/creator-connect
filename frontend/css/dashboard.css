@@ -1,0 +1,61 @@
+/* ==========================================================================
+   Dashboard layout — shared by creator, company, and admin dashboards
+   ========================================================================== */
+
+.dash-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  padding: 32px 24px 80px;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .dash-layout { grid-template-columns: 1fr; }
+}
+
+.dash-sidebar { position: sticky; top: 90px; }
+.dash-tabs { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 800px) { .dash-tabs { flex-direction: row; overflow-x: auto; gap: 8px; } }
+
+.dash-tab {
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--slate);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dash-tab:hover { background: var(--paper-dim); color: var(--ink); }
+.dash-tab.active { background: var(--ink); color: var(--paper); }
+
+.dash-head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.dash-head h1 { font-size: 1.7rem; margin-bottom: 4px; }
+.dash-head p { margin: 0; }
+
+.stat-card { padding: 20px; }
+.stat-card .sc-label { font-size: 0.78rem; color: var(--slate); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.stat-card .sc-value { font-family: var(--font-display); font-size: 1.9rem; margin-top: 6px; }
+
+.list-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--line);
+  margin-bottom: 10px; gap: 16px; flex-wrap: wrap;
+  background: var(--paper-raised);
+}
+.list-row .lr-title { font-weight: 700; margin-bottom: 4px; }
+.list-row .lr-meta { font-size: 0.82rem; color: var(--slate); }
+.list-row .lr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.activity-item { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.activity-item:first-child { border-top: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand-blue); margin-top: 6px; flex-shrink: 0; }
+.activity-item .ai-desc { font-size: 0.88rem; }
+.activity-item .ai-time { font-size: 0.75rem; color: var(--slate); }
