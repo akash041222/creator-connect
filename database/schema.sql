@@ -236,7 +236,7 @@ CREATE TABLE reviews (
     application_id     BIGINT NOT NULL,
     reviewer_user_id   BIGINT NOT NULL,
     reviewee_user_id   BIGINT NOT NULL,
-    rating             TINYINT NOT NULL,   -- 1 to 5
+    rating             INT NOT NULL,   -- 1 to 5
     comment            VARCHAR(2000),
     is_deleted         BOOLEAN NOT NULL DEFAULT FALSE,
     created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
